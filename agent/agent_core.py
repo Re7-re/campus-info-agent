@@ -2,15 +2,57 @@
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState
 from langgraph.prebuilt import ToolNode
-from config import ZHIPU_API_KEY, MODEL_NAME
+from config import Config
 from agent.tools import TOOLS
 
-# 智谱模型
-llm = ChatOpenAI(
-    api_key=ZHIPU_API_KEY,
-    model=MODEL_NAME,
-    base_url="https://open.bigmodel.cn/api/paas/v4/"
-)
+def get_llm(service: str = None):
+    """
+    根据配置获取LLM模型
+    
+    Args:
+        service: AI服务名称，可选值: zhipu, siliconflow, deepseek
+    
+    Returns:
+        ChatOpenAI实例
+    """
+    if service is None:
+        service = Config.DEFAULT_AI_SERVICE
+    
+    if service == "zhipu":
+        return ChatOpenAI(
+            api_key=Config.ZHIPU_API_KEY,
+            model=Config.ZHIPU_MODEL_NAME,
+            base_url=Config.ZHIPU_API_BASE
+        )
+    elif service == "siliconflow":
+        return ChatOpenAI(
+            api_key=Config.SILICONFLOW_API_KEY,
+            model=Config.SILICONFLOW_MODEL_NAME,
+            base_url=Config.SILICONFLOW_API_BASE
+        )
+    elif service == "deepseek":
+        return ChatOpenAI(
+            api_key=Config.DEEPSEEK_API_KEY,
+            model=Config.DEEPSEEK_MODEL_NAME,
+            base_url=Config.DEEPSEEK_API_BASE
+        )
+    elif service == "longchat":
+        return ChatOpenAI(
+            api_key=Config.LONGCHAT_API_KEY,
+            model=Config.LONGCHAT_MODEL_NAME,
+            base_url=Config.LONGCHAT_API_BASE
+        )
+    elif service == "alibaba":
+        return ChatOpenAI(
+            api_key=Config.ALIBABA_API_KEY,
+            model=Config.ALIBABA_MODEL_NAME,
+            base_url=Config.ALIBABA_API_BASE
+        )
+    else:
+        raise ValueError(f"不支持的 AI 服务：{service}")
+
+# 获取默认LLM
+llm = get_llm()
 
 # 绑定工具
 llm_with_tools = llm.bind_tools(TOOLS)

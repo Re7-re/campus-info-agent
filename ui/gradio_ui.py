@@ -1,6 +1,6 @@
 """
 Gradio UI模块
-提供带有侧边栏的多功能界面
+提供带有侧边栏的多功能界面，支持用户登录注册
 """
 
 import gradio as gr
@@ -13,19 +13,26 @@ from features import (
     NoticeFeature,
     AgentFeature
 )
+from data.user_data import UserData
 from utils.logger import setup_logger
 
 
 class CampusInfoUI:
     """
     校园信息查询系统UI类
-    支持多功能模块切换和智能对话
+    支持多功能模块切换、智能对话和用户认证
     """
     
     def __init__(self):
         """初始化UI"""
         # 设置日志
         self.logger = setup_logger("campus_ui")
+        
+        # 初始化用户数据管理
+        self.user_data = UserData()
+        
+        # 当前登录用户
+        self.current_user = None
         
         # 初始化功能模块
         self.features = {
@@ -41,6 +48,147 @@ class CampusInfoUI:
         self.current_feature = "智能助手"
         
         self.logger.info("校园信息UI初始化完成")
+    
+    def _create_login_ui(self) -> gr.Blocks:
+        """创建登录页面"""
+        with gr.Blocks(title="用户登录") as login_block:
+            gr.Markdown("""
+            # 🔐 用户登录
+            
+            欢迎使用校园信息查询系统
+            """)
+            
+            with gr.Column(scale=1, min_width=400):
+                username = gr.Textbox(
+                    label="用户名",
+                    placeholder="请输入用户名",
+                    max_lines=1
+                )
+                
+                password = gr.Textbox(
+                    label="密码",
+                    placeholder="请输入密码",
+                    type="password",
+                    max_lines=1
+                )
+                
+                message = gr.Markdown(label="提示信息")
+                
+                with gr.Row():
+                    login_btn = gr.Button("登录", variant="primary", scale=2)
+                    register_btn = gr.Button("注册", variant="secondary", scale=1)
+                
+                # 测试账号提示
+                with gr.Accordion("测试账号", open=False):
+                    gr.Markdown("""
+                    **管理员账号：**
+                    - 用户名：admin
+                    - 密码：admin123
+                    
+                    **学生账号：**
+                    - 用户名：student
+                    - 密码：student123
+                    """)
+            
+            def do_login(username_val, password_val):
+                result = self.user_data.login(username_val, password_val)
+                
+                if result["success"]:
+                    self.current_user = result["user"]
+                    self.logger.info(f"用户登录成功: {username_val}")
+                    return gr.Markdown(f"✅ {result['message']}"), gr.update(visible=False)
+                else:
+                    return gr.Markdown(f"❌ {result['message']}"), gr.update(visible=True)
+            
+            login_btn.click(do_login, [username, password], [message, login_block])
+            username.submit(do_login, [username, password], [message, login_block])
+            password.submit(do_login, [username, password], [message, login_block])
+            
+            # 跳转到注册页面
+            register_btn.click(lambda: gr.update(visible=False), None, login_block)
+        
+        return login_block
+    
+    def _create_register_ui(self) -> gr.Blocks:
+        """创建注册页面"""
+        with gr.Blocks(title="用户注册") as register_block:
+            gr.Markdown("""
+            # 📝 用户注册
+            
+            创建新账号
+            """)
+            
+            with gr.Column(scale=1, min_width=400):
+                username = gr.Textbox(
+                    label="用户名",
+                    placeholder="3-20位字母数字",
+                    max_lines=1
+                )
+                
+                password = gr.Textbox(
+                    label="密码",
+                    placeholder="至少6位，包含字母和数字",
+                    type="password",
+                    max_lines=1
+                )
+                
+                confirm_password = gr.Textbox(
+                    label="确认密码",
+                    placeholder="再次输入密码",
+                    type="password",
+                    max_lines=1
+                )
+                
+                email = gr.Textbox(
+                    label="邮箱",
+                    placeholder="请输入邮箱地址",
+                    max_lines=1
+                )
+                
+                phone = gr.Textbox(
+                    label="手机号",
+                    placeholder="请输入手机号码",
+                    max_lines=1
+                )
+                
+                nickname = gr.Textbox(
+                    label="昵称（可选）",
+                    placeholder="您的昵称",
+                    max_lines=1
+                )
+                
+                message = gr.Markdown(label="提示信息")
+                
+                with gr.Row():
+                    submit_btn = gr.Button("注册", variant="primary", scale=2)
+                    back_btn = gr.Button("返回登录", variant="secondary", scale=1)
+            
+            def do_register(username_val, password_val, confirm_val, email_val, phone_val, nickname_val):
+                result = self.user_data.register(
+                    username=username_val,
+                    password=password_val,
+                    confirm_password=confirm_val,
+                    email=email_val,
+                    phone=phone_val,
+                    nickname=nickname_val
+                )
+                
+                if result["success"]:
+                    self.logger.info(f"用户注册成功: {username_val}")
+                    return gr.Markdown(f"✅ {result['message']}")
+                else:
+                    return gr.Markdown(f"❌ {result['message']}")
+            
+            submit_btn.click(
+                do_register,
+                [username, password, confirm_password, email, phone, nickname],
+                [message]
+            )
+            
+            # 返回登录页面
+            back_btn.click(lambda: gr.update(visible=False), None, register_block)
+        
+        return register_block
     
     def create_feature_ui(self, feature_name: str) -> gr.Blocks:
         """
@@ -108,23 +256,35 @@ class CampusInfoUI:
             # 事件绑定
             def respond(message, history, memory_enabled):
                 if not message.strip():
-                    return "", history
+                    return "", history, "请输入消息"
                 
                 try:
                     result = feature.execute(message, use_memory=memory_enabled)
                     response = result.get("message", "抱歉，我遇到了一些问题。")
                     
-                    # 更新对话历史
-                    history.append((message, response))
+                    # 更新对话历史（兼容新旧格式）
+                    if isinstance(history, list):
+                        # 新版本的 messages 格式
+                        history.append({"role": "user", "content": message})
+                        history.append({"role": "assistant", "content": response})
+                    else:
+                        # 旧版本的 tuple 格式
+                        history = history or []
+                        history.append((message, response))
                     
                     # 更新记忆信息
                     stats = feature.get_memory_stats()
-                    memory_text = f"会话ID: {stats['session_id']} | 消息数: {stats['total_messages']}/{stats['max_history']}"
+                    memory_text = f"会话 ID: {stats['session_id']} | 消息数：{stats['total_messages']}/{stats['max_history']}"
                     
                     return "", history, memory_text
                 except Exception as e:
-                    error_msg = f"发生错误: {str(e)}"
-                    history.append((message, error_msg))
+                    error_msg = f"发生错误：{str(e)}"
+                    if isinstance(history, list):
+                        history.append({"role": "user", "content": message})
+                        history.append({"role": "assistant", "content": error_msg})
+                    else:
+                        history = history or []
+                        history.append((message, error_msg))
                     return "", history, "错误状态"
             
             def clear_chat():
@@ -386,9 +546,15 @@ class CampusInfoUI:
         Returns:
             Gradio Blocks对象
         """
-        with gr.Blocks(
-            title="校园信息智能查询系统"
-        ) as demo:
+        with gr.Blocks(title="校园信息智能查询系统") as demo:
+            # 用户状态显示
+            with gr.Row():
+                # 登录状态
+                with gr.Column(scale=1):
+                    if self.current_user:
+                        gr.Markdown(f"当前用户：{self.current_user['nickname']}")
+                        logout_btn = gr.Button("退出登录", variant="stop")
+                        logout_btn.click(lambda: self._handle_logout(), None, None)
             
             with gr.Row():
                 # 左侧边栏
@@ -448,7 +614,6 @@ class CampusInfoUI:
             # 绑定侧边栏按钮事件
             def switch_feature(feature_name):
                 """切换功能标签页"""
-                # 找到对应的标签页索引
                 feature_names = list(self.features.keys())
                 return gr.Tabs(selected=feature_names.index(feature_name))
             
@@ -459,6 +624,11 @@ class CampusInfoUI:
                 )
         
         return demo
+    
+    def _handle_logout(self):
+        """处理用户退出登录"""
+        self.current_user = None
+        self.logger.info("用户退出登录")
 
 
 def create_ui() -> gr.Blocks:
@@ -470,3 +640,193 @@ def create_ui() -> gr.Blocks:
     """
     ui_creator = CampusInfoUI()
     return ui_creator.create_ui()
+
+
+# 独立的登录注册应用
+def create_auth_ui() -> gr.Blocks:
+    """
+    创建登录注册界面
+    
+    Returns:
+        Gradio Blocks对象
+    """
+    ui_creator = CampusInfoUI()
+    
+    with gr.Blocks(
+        title="校园信息智能查询系统 - 登录",
+        css="""
+        .container {
+            max-width: 450px !important;
+            margin: 0 auto !important;
+        }
+        .login-box {
+            max-width: 400px !important;
+            margin: 0 auto !important;
+            padding: 20px !important;
+        }
+        """
+    ) as demo:
+        gr.Markdown("""
+        # 🏫 校园信息智能查询系统
+        """)
+        
+        with gr.Tabs() as tabs:
+            with gr.TabItem("登录"):
+                with gr.Column(scale=1, min_width=400, elem_classes="login-box"):
+                    gr.Markdown("### 用户登录")
+                    gr.Markdown("请输入您的账号和密码登录系统")
+                    
+                    username = gr.Textbox(
+                        label="用户名",
+                        placeholder="请输入用户名",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    password = gr.Textbox(
+                        label="密码",
+                        placeholder="请输入密码",
+                        type="password",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    login_message = gr.Markdown(label="提示信息")
+                    
+                    def do_login(username_val, password_val):
+                        result = ui_creator.user_data.login(username_val, password_val)
+                        if result["success"]:
+                            ui_creator.current_user = result["user"]
+                            ui_creator.logger.info(f"用户登录成功: {username_val}")
+                            # 登录成功后跳转到主应用
+                            return (
+                                gr.Markdown(f"✅ {result['message']}"),
+                                gr.update(visible=False),  # 隐藏登录页面
+                                gr.update(visible=True)   # 显示主应用
+                            )
+                        else:
+                            return (
+                                gr.Markdown(f"❌ {result['message']}"),
+                                gr.update(visible=True),  # 保持登录页面显示
+                                gr.update(visible=False)  # 不显示主应用
+                            )
+                    
+                    login_btn = gr.Button("登录", variant="primary", size="lg")
+                    login_btn.click(
+                        do_login, 
+                        [username, password], 
+                        [login_message, demo, demo]
+                    )
+                    username.submit(
+                        do_login, 
+                        [username, password], 
+                        [login_message, demo, demo]
+                    )
+                    password.submit(
+                        do_login, 
+                        [username, password], 
+                        [login_message, demo, demo]
+                    )
+                    
+                    # 测试账号提示
+                    with gr.Accordion("测试账号", open=False):
+                        gr.Markdown("""
+                        **管理员账号：**
+                        - 用户名：admin
+                        - 密码：admin123
+                        
+                        **学生账号：**
+                        - 用户名：student
+                        - 密码：student123
+                        """)
+            
+            with gr.TabItem("注册"):
+                with gr.Column(scale=1, min_width=400, elem_classes="login-box"):
+                    gr.Markdown("### 用户注册")
+                    gr.Markdown("创建新账号以使用系统功能")
+                    
+                    reg_username = gr.Textbox(
+                        label="用户名",
+                        placeholder="3-20位字母数字",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_password = gr.Textbox(
+                        label="密码",
+                        placeholder="至少6位，包含字母和数字",
+                        type="password",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_confirm_password = gr.Textbox(
+                        label="确认密码",
+                        placeholder="再次输入密码",
+                        type="password",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_email = gr.Textbox(
+                        label="邮箱",
+                        placeholder="请输入邮箱地址",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_phone = gr.Textbox(
+                        label="手机号",
+                        placeholder="请输入手机号码",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_nickname = gr.Textbox(
+                        label="昵称（可选）",
+                        placeholder="您的昵称",
+                        max_lines=1,
+                        container=True
+                    )
+                    
+                    reg_message = gr.Markdown(label="提示信息")
+                    
+                    def do_register(uname, pwd, cpwd, email, phone, nickname):
+                        result = ui_creator.user_data.register(
+                            username=uname,
+                            password=pwd,
+                            confirm_password=cpwd,
+                            email=email,
+                            phone=phone,
+                            nickname=nickname
+                        )
+                        if result["success"]:
+                            ui_creator.logger.info(f"用户注册成功: {uname}")
+                            return gr.Markdown(f"✅ {result['message']}<br>请切换到登录页面进行登录")
+                        else:
+                            return gr.Markdown(f"❌ {result['message']}")
+                    
+                    register_btn = gr.Button("注册", variant="primary", size="lg")
+                    register_btn.click(
+                        do_register,
+                        [reg_username, reg_password, reg_confirm_password, reg_email, reg_phone, reg_nickname],
+                        [reg_message]
+                    )
+            
+            with gr.TabItem("进入系统"):
+                gr.Markdown("""
+                ## 🚀 进入系统
+                
+                登录成功后，点击下方按钮进入校园信息查询系统。
+                """)
+                
+                def enter_system():
+                    if ui_creator.current_user:
+                        return gr.Markdown(f"✅ 欢迎回来，{ui_creator.current_user['nickname']}！")
+                    else:
+                        return gr.Markdown("❌ 请先登录")
+                
+                enter_btn = gr.Button("进入系统", variant="primary", size="lg")
+                enter_btn.click(enter_system, None, None)
+    
+    return demo
