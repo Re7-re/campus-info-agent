@@ -1,0 +1,9 @@
+2026-06-05 11:23:47 - main - INFO - 环境验证通过
+2026-06-05 11:23:47 - main - INFO - 正在创建UI界面...
+2026-06-05 11:23:47 - main - ERROR - 系统启动失败: ConversationMemory.__init__() got an unexpected keyword argument 'max_limit'
+2026-06-05 11:26:35 - main - INFO - 环境验证通过
+2026-06-05 11:26:35 - main - INFO - 正在创建UI界面...
+2026-06-05 11:26:35 - main - ERROR - 系统启动失败: ConversationMemory.__init__() got an unexpected keyword argument 'max_limit'
+2026-06-05 11:28:29 - main - INFO - 环境验证通过
+2026-06-05 11:28:29 - main - INFO - 正在创建UI界面...
+2026-06-05 11:28:29 - main - INFO - 启动服务器: 127.0.0.1:7860
