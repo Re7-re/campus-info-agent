@@ -1,0 +1,20 @@
+{
+  "admin": {
+    "username": "admin",
+    "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "email": "admin@example.com",
+    "phone": "13800138000",
+    "nickname": "管理员",
+    "role": "admin",
+    "created_at": "2026-06-01 00:00:00"
+  },
+  "student": {
+    "username": "student",
+    "password": "703b0a3d6ad75b649a28adde7d83c6251da457549263bc7ff45ec709b0a8448b",
+    "email": "student@example.com",
+    "phone": "13900139000",
+    "nickname": "学生用户",
+    "role": "student",
+    "created_at": "2026-06-02 00:00:00"
+  }
+}
