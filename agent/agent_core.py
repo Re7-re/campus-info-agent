@@ -7,7 +7,7 @@ from config import Config
 from agent.tools import TOOLS
 
 
-def get_llm(service: str | None = None) -> ChatOpenAI:
+def get_llm(service: str|None = None) -> ChatOpenAI:
     """
     根据配置获取 LLM 模型实例。
 

@@ -234,12 +234,12 @@ class LocalRuleEngine:
 
         return None
 
-    def get_category(self, query: str) -> str:
+    def get_category(self, query: str)->str:
         """
         获取查询对应的类别。
 
         Args:
-            query: 用户查询文本。
+            query:  用户查询文本。
 
         Returns:
             类别字符串，若无匹配则返回 "unknown"。
