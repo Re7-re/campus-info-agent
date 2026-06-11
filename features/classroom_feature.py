@@ -16,7 +16,7 @@ class ClassroomFeature(BaseFeature):
     def __init__(self):
         super().__init__(
             name="教室查询",
-            description="查询可用空教室信息"
+            description=" 查询可用空教室信息"
         )
         self.classroom_data = MOCK_STUDENT["classroom"]
     

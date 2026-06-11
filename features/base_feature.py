@@ -21,7 +21,7 @@ class BaseFeature(ABC):
             name: 功能名称
             description: 功能描述
         """
-        self.name = name
+        self.name =  name
         self.description = description
         self.enabled = True
     

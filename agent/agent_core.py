@@ -7,9 +7,9 @@ from config import Config
 from agent.tools import TOOLS
 
 
-def get_llm(service: str|None = None) -> ChatOpenAI:
+def get_llm(service: str| None = None) -> ChatOpenAI:
     """
-    根据配置获取 LLM 模型实例。
+    根据配置获取 LLM是 模型实例。
 
     Args:
         service: AI服务名称，可选值: zhipu, siliconflow, deepseek, longchat, alibaba。

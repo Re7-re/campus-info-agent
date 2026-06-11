@@ -28,7 +28,7 @@ class AgentFeature(BaseFeature):
     
     def __init__(self):
         super().__init__(
-            name="智能助手",
+            name=" 智能助手",
             description="AI智能对话助手，支持自然语言查询"
         )
         

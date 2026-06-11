@@ -5,7 +5,7 @@ services:
   campus-agent-ui:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile:  docker/Dockerfile
     ports:
       - "7860:7860"
     environment:
