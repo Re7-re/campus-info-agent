@@ -1,12 +1,20 @@
 """
-模拟校园数据
-提供用于测试的模拟学生数据
+校园数据模块
+支持真实教务数据和模拟数据
 """
 
 from typing import Dict, List, Any
 import random
+import json
+import os
 from datetime import datetime, timedelta
 
+# 尝试导入教务爬虫
+try:
+    from .cuit_spider import CuitSpider
+    HAS_CUIT_SPIDER = True
+except ImportError:
+    HAS_CUIT_SPIDER = False
 
 # ==================== 课程名称库 ====================
 COURSES = [
@@ -319,3 +327,97 @@ def get_all_terms() -> List[str]:
 def get_all_days() -> List[str]:
     """获取所有星期列表"""
     return DAYS.copy()
+
+
+# ==================== 真实教务数据支持 ====================
+
+def load_cuit_data(filepath: str = "data/cuit_data.json") -> Dict[str, Any]:
+    """
+    从文件加载真实教务数据
+    
+    Args:
+        filepath: 数据文件路径
+    
+    Returns:
+        教务数据字典，如果文件不存在则返回空字典
+    """
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"❌ 加载教务数据失败: {str(e)}")
+    return {}
+
+
+def fetch_cuit_data(username: str, password: str, cookies: dict = None, save: bool = True) -> Dict[str, Any]:
+    """
+    从成都信息工程大学教务系统获取真实数据
+    
+    Args:
+        username: 学号
+        password: 密码
+        cookies: 可选的登录Cookie（如果提供则直接使用Cookie访问）
+        save: 是否保存到文件
+    
+    Returns:
+        包含课表、成绩、考试、通知、教室的字典
+    """
+    if not HAS_CUIT_SPIDER:
+        print("Cuit spider module not loaded")
+        return {}
+    
+    try:
+        # 使用Cookie或密码登录
+        spider = CuitSpider(username, password, cookies=cookies)
+        data = spider.get_all_data()
+        
+        if save and data:
+            os.makedirs("data", exist_ok=True)
+            with open("data/cuit_data.json", 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print("Cuit data saved to data/cuit_data.json")
+        
+        return data
+    except Exception as e:
+        print("Fetch cuit data failed: " + str(e))
+        return {}
+
+
+def update_student_with_cuit_data(student_id: str = None, 
+                                   username: str = None, 
+                                   password: str = None,
+                                   cookies: dict = None) -> Dict[str, Any]:
+    """
+    使用真实教务数据更新学生信息
+    
+    Args:
+        student_id: 学生ID
+        username: 教务系统学号
+        password: 教务系统密码
+        cookies: 可选的登录Cookie
+    
+    Returns:
+        更新后的学生数据
+    """
+    # 尝试加载已保存的教务数据
+    cuit_data = load_cuit_data()
+    
+    # 如果没有保存的数据，尝试从教务系统获取
+    if not cuit_data and username and password:
+        cuit_data = fetch_cuit_data(username, password, cookies=cookies)
+    
+    # 如果获取到真实数据，更新学生信息
+    if cuit_data:
+        return {
+            "id": username or student_id or "2023132060",
+            "name": "蔡华兵",
+            "grade": cuit_data.get("grade", MOCK_STUDENT["grade"]),
+            "schedule": cuit_data.get("schedule", MOCK_STUDENT["schedule"]),
+            "classroom": cuit_data.get("classroom", MOCK_STUDENT["classroom"]),
+            "exam": cuit_data.get("exam", MOCK_STUDENT["exam"]),
+            "notice": cuit_data.get("notice", MOCK_STUDENT["notice"])
+        }
+    
+    # 返回模拟数据
+    return get_student_data(student_id)

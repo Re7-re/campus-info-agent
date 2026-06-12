@@ -4,7 +4,10 @@
 
 from typing import Dict, Any, Optional, List
 from .base_feature import BaseFeature
-from data.mock_data import MOCK_STUDENT
+from data.mock_data import MOCK_STUDENT, update_student_with_cuit_data
+from config import Config
+import json
+import os
 
 
 class GradeFeature(BaseFeature):
@@ -18,7 +21,27 @@ class GradeFeature(BaseFeature):
             name="成绩查询",
             description="查询学生各学期成绩信息"
         )
-        self.grade_data = MOCK_STUDENT["grade"]
+        # 根据配置选择数据源
+        if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
+            # 使用真实教务数据
+            student_data = update_student_with_cuit_data(
+                username=Config.CUIT_USERNAME,
+                password=Config.CUIT_PASSWORD,
+                cookies=Config.CUIT_COOKIES
+            )
+            self.grade_data = student_data["grade"]
+        elif Config.DATA_SOURCE == "manual":
+            # 使用手动导入数据
+            manual_data_path = os.path.join(os.path.dirname(__file__), "..", "data", "manual_data.json")
+            try:
+                with open(manual_data_path, "r", encoding="utf-8") as f:
+                    manual_data = json.load(f)
+                    self.grade_data = manual_data.get("grade", MOCK_STUDENT["grade"])
+            except:
+                self.grade_data = MOCK_STUDENT["grade"]
+        else:
+            # 使用模拟数据
+            self.grade_data = MOCK_STUDENT["grade"]
     
     def execute(self, term: Optional[str] = None, **kwargs) -> Dict[str, Any]:
         """

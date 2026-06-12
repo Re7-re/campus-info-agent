@@ -4,7 +4,10 @@
 
 from typing import Dict, Any, List
 from .base_feature import BaseFeature
-from data.mock_data import MOCK_STUDENT
+from data.mock_data import MOCK_STUDENT, update_student_with_cuit_data
+from config import Config
+import json
+import os
 
 
 class NoticeFeature(BaseFeature):
@@ -18,7 +21,27 @@ class NoticeFeature(BaseFeature):
             name="通知查询",
             description="查询最新校园通知信息"
         )
-        self.notice_data = MOCK_STUDENT["notice"]
+        # 根据配置选择数据源
+        if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
+            # 使用真实教务数据
+            student_data = update_student_with_cuit_data(
+                username=Config.CUIT_USERNAME,
+                password=Config.CUIT_PASSWORD,
+                cookies=Config.CUIT_COOKIES
+            )
+            self.notice_data = student_data["notice"]
+        elif Config.DATA_SOURCE == "manual":
+            # 使用手动导入数据
+            manual_data_path = os.path.join(os.path.dirname(__file__), "..", "data", "manual_data.json")
+            try:
+                with open(manual_data_path, "r", encoding="utf-8") as f:
+                    manual_data = json.load(f)
+                    self.notice_data = manual_data.get("notice", MOCK_STUDENT["notice"])
+            except:
+                self.notice_data = MOCK_STUDENT["notice"]
+        else:
+            # 使用模拟数据
+            self.notice_data = MOCK_STUDENT["notice"]
     
     def execute(self, count: int = 5, **kwargs) -> Dict[str, Any]:
         """

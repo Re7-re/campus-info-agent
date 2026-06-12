@@ -4,8 +4,10 @@
 
 from typing import Dict, Any, Optional, List
 from .base_feature import BaseFeature
-from data.mock_data import MOCK_STUDENT
-
+from data.mock_data import MOCK_STUDENT, update_student_with_cuit_data
+from config import Config
+import json
+import os
 
 class ScheduleFeature(BaseFeature):
     """
@@ -18,7 +20,27 @@ class ScheduleFeature(BaseFeature):
             name="课表查询",
             description="查询学生周课表信息"
         )
-        self.schedule_data = MOCK_STUDENT["schedule"]
+        # 根据配置选择数据源
+        if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
+            # 使用真实教务数据
+            student_data = update_student_with_cuit_data(
+                username=Config.CUIT_USERNAME,
+                password=Config.CUIT_PASSWORD,
+                cookies=Config.CUIT_COOKIES
+            )
+            self.schedule_data = student_data["schedule"]
+        elif Config.DATA_SOURCE == "manual":
+            # 使用手动导入数据
+            manual_data_path = os.path.join(os.path.dirname(__file__), "..", "data", "manual_data.json")
+            try:
+                with open(manual_data_path, "r", encoding="utf-8") as f:
+                    manual_data = json.load(f)
+                    self.schedule_data = manual_data.get("schedule", MOCK_STUDENT["schedule"])
+            except:
+                self.schedule_data = MOCK_STUDENT["schedule"]
+        else:
+            # 使用模拟数据
+            self.schedule_data = MOCK_STUDENT["schedule"]
     
     def execute(self, day: Optional[str] = None, **kwargs) -> Dict[str, Any]:
         """

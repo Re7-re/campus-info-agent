@@ -74,9 +74,11 @@ class IntegratedCampusUI:
                 --border-color: #bfdbfe;
                 --success-color: #059669;
                 --warning-color: #d97706;
+                --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
             }
             
             body {
+                font-family: var(--font-family) !important;
                 font-size: 16px !important;
                 color: var(--text-color);
                 background-color: var(--bg-color);

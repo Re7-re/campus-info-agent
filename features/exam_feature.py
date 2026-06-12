@@ -4,8 +4,11 @@
 
 from typing import Dict, Any, Optional, List
 from .base_feature import BaseFeature
-from data.mock_data import MOCK_STUDENT
+from data.mock_data import MOCK_STUDENT, update_student_with_cuit_data
+from config import Config
 from datetime import datetime
+import json
+import os
 
 
 class ExamFeature(BaseFeature):
@@ -19,7 +22,27 @@ class ExamFeature(BaseFeature):
             name="考试查询",
             description="查询期末考试安排信息"
         )
-        self.exam_data = MOCK_STUDENT["exam"]
+        # 根据配置选择数据源
+        if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
+            # 使用真实教务数据
+            student_data = update_student_with_cuit_data(
+                username=Config.CUIT_USERNAME,
+                password=Config.CUIT_PASSWORD,
+                cookies=Config.CUIT_COOKIES
+            )
+            self.exam_data = student_data["exam"]
+        elif Config.DATA_SOURCE == "manual":
+            # 使用手动导入数据
+            manual_data_path = os.path.join(os.path.dirname(__file__), "..", "data", "manual_data.json")
+            try:
+                with open(manual_data_path, "r", encoding="utf-8") as f:
+                    manual_data = json.load(f)
+                    self.exam_data = manual_data.get("exam", MOCK_STUDENT["exam"])
+            except:
+                self.exam_data = MOCK_STUDENT["exam"]
+        else:
+            # 使用模拟数据
+            self.exam_data = MOCK_STUDENT["exam"]
     
     def execute(self, subject: Optional[str] = None, **kwargs) -> Dict[str, Any]:
         """

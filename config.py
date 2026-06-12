@@ -12,12 +12,12 @@ class Config:
     
     # 智谱 AI 配置
     ZHIPU_API_KEY: str = "49f5437b5aa5412ea40de86cae19a85d.57k0Wao6iRLxVXq9"  # 有免费额度的新Key
-    ZHIPU_MODEL_NAME: str = "glm-4-air"  # 通用模型，使用按tokens计费的资源包
+    ZHIPU_MODEL_NAME: str = "glm-4-flash"  # 智谱免费模型
     ZHIPU_API_BASE: str = "https://open.bigmodel.cn/api/paas/v4/"
     
     # 硅基流动配置 - 免费模型
     SILICONFLOW_API_KEY: str = "sk-ggtcxwwrmbolnpkgstkggqnglzaqqccrtixeqtxnrkjrbnia"
-    SILICONFLOW_MODEL_NAME: str = "Qwen/Qwen2.5-1.5B-Instruct"  # 确认可用的免费模型
+    SILICONFLOW_MODEL_NAME: str = "Qwen/Qwen2-1.5B-Instruct"  # 确认可用的免费模型
     SILICONFLOW_API_BASE: str = "https://api.siliconflow.cn/v1/"
     
     # DeepSeek 配置 - 免费模型
@@ -36,7 +36,12 @@ class Config:
     ALIBABA_API_BASE: str = "https://dashscope.aliyuncs.com/compatible-mode/v1/"
     
     # 默认使用的 AI 服务 - 切换到智谱免费模型
-    DEFAULT_AI_SERVICE: str = "zhipu"  # 可选值：zhipu, siliconflow, deepseek, longchat, alibaba
+    DEFAULT_AI_SERVICE: str = "zhipu"  # 优先使用智谱免费模型
+    
+    # API 连接配置
+    API_TIMEOUT: int = 30  # 连接超时时间（秒）
+    API_RETRY_COUNT: int = 2  # 重试次数
+    API_RETRY_DELAY: int = 2  # 重试延迟（秒）
     
     # 服务配置
     API_HOST: str = "127.0.0.1"
@@ -51,6 +56,7 @@ class Config:
     ENABLE_MEMORY: bool = True
     MAX_MEMORY_SIZE: int = 50
     ENABLE_KNOWLEDGE_BASE: bool = True
+    ENABLE_FALLBACK: bool = True  # 启用降级到本地规则引擎
     
     # 日志配置
     LOG_LEVEL: str = "INFO"
@@ -60,6 +66,31 @@ class Config:
     # 数据配置
     DATA_DIR: str = "data"
     MEMORY_DIR: str = "memory"
+    
+    # 教务系统配置
+    ENABLE_CUIT_SPIDER: bool = True  # 是否启用成都信息工程大学教务爬虫
+    CUIT_USERNAME: str = "2023132060"  # 学号
+    CUIT_PASSWORD: str = "C18328526643x."  # 密码
+    CUIT_AUTO_UPDATE: bool = True  # 是否自动更新数据
+    CUIT_UPDATE_INTERVAL: int = 24  # 更新间隔（小时）
+    
+    # 教务系统Cookie配置（登录后获取，只保留关键3条）
+    CUIT_COOKIES: dict = {
+        "GSSESSIONID": "DDCAF4CB441F55D9ED1FB2372B4D8676",
+        "JSESSIONID": "DDCAF4CB441F55D9ED1FB2372B4D8676",
+        "semester.id": "1006",
+        "WVTSESSIONID": "90bec63b-134a-4b12-4b80-b412-ad0c6cc3434"
+    }
+    
+    # 教务系统URL配置（使用eams老平台）
+    CUIT_JWGL_URL: str = "http://jwgl.cuit.edu.cn/eams"  # eams老教务平台
+    CUIT_JWC_URL: str = "https://jwc.cuit.edu.cn"        # 教务处官网
+    CUIT_CAS_URL: str = "https://cas.cuit.edu.cn"        # CAS登录
+    
+    # 数据来源配置
+    DATA_SOURCE: str = "manual"  # 可选值: mock(模拟数据), cuit(真实数据), manual(手动导入)
+    # 注意：cuit模式需要配置正确的教务系统登录信息，且教务系统可能有验证码等安全措施
+    # manual模式需要在 data/manual_data.json 文件中手动填写数据
     
     # UI 配置
     UI_THEME: str = "Soft"
