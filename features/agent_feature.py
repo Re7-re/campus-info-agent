@@ -20,7 +20,7 @@ from config import Config
 from agent.local_engine import query_local_engine
 
 
-class  AgentFeature(BaseFeature):
+class AgentFeature(BaseFeature):
     """
     智能体功能模块
     基于LangGraph和智谱大模型的智能对话系统

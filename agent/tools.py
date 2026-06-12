@@ -5,7 +5,7 @@ from data.mock_data import MOCK_STUDENT
 
 
 @tool
-def query_grade(term: str | None = None) -> str:
+def query_grade(term:  str | None = None) -> str:
     """
     查询学生成绩。
 
