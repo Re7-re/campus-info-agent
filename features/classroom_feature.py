@@ -19,7 +19,7 @@ class ClassroomFeature(BaseFeature):
     def __init__(self):
         super().__init__(
             name="教室查询",
-            description="查询可用空教室信息"
+            description=" 查询可用空教室信息"
         )
         # 根据配置选择数据源
         if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:

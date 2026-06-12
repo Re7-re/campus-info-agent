@@ -10,7 +10,7 @@ import json
 import os
 
 
-class NoticeFeature(BaseFeature):
+class  NoticeFeature(BaseFeature):
     """
     通知查询功能模块
     支持查询最新校园通知、通知详情等
@@ -43,7 +43,7 @@ class NoticeFeature(BaseFeature):
             # 使用模拟数据
             self.notice_data = MOCK_STUDENT["notice"]
     
-    def execute(self, count: int = 5, **kwargs) -> Dict[str, Any]:
+    def execute (self, count: int = 5, **kwargs) -> Dict[str, Any]:
         """
         执行通知查询
         

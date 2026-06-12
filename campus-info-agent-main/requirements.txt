@@ -1,0 +1,25 @@
+# 校园信息智能查询系统依赖包
+# Python 3.8+
+
+# 核心框架
+langgraph>=0.2.0
+langchain>=0.3.0
+langchain-openai>=0.2.0
+
+# 智谱AI SDK
+zhipuai>=2.0.0
+
+# Web界面
+gradio>=4.0.0
+
+# API框架
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# 工具库
+python-dotenv>=1.0.0
+requests>=2.31.0
+pydantic>=2.0.0
+
+# 数据处理
+pandas>=2.0.0

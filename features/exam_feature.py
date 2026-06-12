@@ -20,7 +20,7 @@ class ExamFeature(BaseFeature):
     def __init__(self):
         super().__init__(
             name="考试查询",
-            description="查询期末考试安排信息"
+            description=" 查询期末考试安排信息"
         )
         # 根据配置选择数据源
         if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
