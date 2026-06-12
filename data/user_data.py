@@ -9,7 +9,7 @@ import hashlib
 from typing import Dict, Any, Optional, List
 
 
-class UserData:
+class  UserData:
     """
     用户数据管理类
     提供用户注册、登录、数据存储等功能
