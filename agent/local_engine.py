@@ -218,7 +218,7 @@ class LocalRuleEngine:
         Returns:
             匹配到的响应文本，若未匹配则返回 None。
         """
-        query_lower = query.lower().strip()
+        query_lower =  query.lower().strip()
 
         # 精确匹配（任意模式字符串出现在 query中即命中）
         for rule in self.rules:

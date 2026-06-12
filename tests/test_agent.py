@@ -8,7 +8,7 @@ import pytest
 from features.agent_feature import AgentFeature
 
 
-class TestAgentFeature:
+class  TestAgentFeature:
     @pytest.fixture
     def agent(self):
         return AgentFeature()

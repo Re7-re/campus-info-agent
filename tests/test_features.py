@@ -12,7 +12,7 @@ from features.exam_feature import ExamFeature
 from features.notice_feature import NoticeFeature
 
 
-class TestFeatures:
+class  TestFeatures:
     def test_grade(self):
         g = GradeFeature()
         res = g.execute(term="2025-2026-1")

@@ -9,7 +9,7 @@ from utils.database import db
 from data.mock_data import MOCK_STUDENT
 
 
-def export_to_json():
+def export_to_json ():
     export_dir = Path(" exports")
     export_dir.mkdir(exist_ok=True)
 
