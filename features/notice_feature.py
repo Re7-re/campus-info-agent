@@ -7,7 +7,7 @@ from .base_feature import BaseFeature
 from data.mock_data import MOCK_STUDENT
 
 
-class NoticeFeature(BaseFeature):
+class  NoticeFeature(BaseFeature):
     """
     通知查询功能模块
     支持查询最新校园通知、通知详情等

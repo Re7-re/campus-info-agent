@@ -7,7 +7,7 @@ from .base_feature import BaseFeature
 from data.mock_data import MOCK_STUDENT
 
 
-class  GradeFeature(BaseFeature):
+class GradeFeature(BaseFeature):
     """
     成绩查询功能模块
     支持按学期查询成绩、查看全部成绩等

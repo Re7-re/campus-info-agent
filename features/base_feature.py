@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
 
 
-class BaseFeature(ABC):
+class  BaseFeature(ABC):
     """
     功能模块基类
     所有具体功能模块都需要继承此类并实现相应方法

@@ -20,7 +20,7 @@ class ClassroomFeature(BaseFeature):
         )
         self.classroom_data = MOCK_STUDENT["classroom"]
     
-    def execute(self, **kwargs) -> Dict[str, Any]:
+    def execute(self, **kwargs) ->  Dict[str, Any]:
         """
         执行教室查询
         

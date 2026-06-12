@@ -8,7 +8,7 @@ from data.mock_data import MOCK_STUDENT
 from datetime import datetime
 
 
-class ExamFeature(BaseFeature):
+class  ExamFeature(BaseFeature):
     """
     考试查询功能模块
     支持查询考试安排、即将到来的考试等
