@@ -20,7 +20,7 @@ class NoticeFeature(BaseFeature):
         )
         self.notice_data = MOCK_STUDENT["notice"]
     
-    def execute(self, count: int = 5, **kwargs) -> Dict[str, Any]:
+    def execute (self, count: int = 5, **kwargs) -> Dict[str, Any]:
         """
         执行通知查询
         

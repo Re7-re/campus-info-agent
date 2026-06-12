@@ -16,7 +16,7 @@ from utils.logger import get_logger
 
 def init_database_with_mock_data():
     """初始化数据库并导入模拟数据"""
-    logger = get_logger("database_init")
+    logger =  get_logger("database_init")
     
     try:
         # 创建数据库管理器

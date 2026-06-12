@@ -17,7 +17,7 @@ class ExamFeature(BaseFeature):
     def __init__(self):
         super().__init__(
             name="考试查询",
-            description="查询期末考试安排信息"
+            description=" 查询期末考试安排信息"
         )
         self.exam_data = MOCK_STUDENT["exam"]
     
