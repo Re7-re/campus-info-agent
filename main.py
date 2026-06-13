@@ -9,7 +9,7 @@ import argparse
 from typing import Optional
 
 # 添加项目根目录到Python路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert (0, os.path.dirname(os.path.abspath(__file__)))
 
 from ui.gradio_ui import create_ui, create_auth_ui
 from ui.integrated_ui import create_integrated_ui

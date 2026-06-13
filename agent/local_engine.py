@@ -7,7 +7,7 @@
 from typing import Dict, Any, List
 
 
-class LocalRuleEngine:
+class LocalRuleEngine :
     """基于关键词匹配的本地规则引擎。"""
 
     def __init__(self) -> None:
