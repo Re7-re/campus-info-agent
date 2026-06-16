@@ -10,7 +10,7 @@ from urllib3.util.retry import Retry
 import logging
 
 # 设置重试策略
-retry_strategy =Retry(
+retry_strategy = Retry(
     total=Config.API_RETRY_COUNT,
     backoff_factor=Config.API_RETRY_DELAY,
     status_forcelist=[429, 500, 502, 503, 504],
