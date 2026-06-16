@@ -7,7 +7,7 @@ import os
 from typing import Optional
 
 
-class Config:
+class  Config:
     """系统配置类"""
     
     # 智谱 AI 配置
