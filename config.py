@@ -68,14 +68,14 @@ class Config:
     MEMORY_DIR: str = "memory"
     
     # 教务系统配置
-    ENABLE_CUIT_SPIDER: bool = True  # 是否启用成都信息工程大学教务爬虫
-    CUIT_USERNAME: str = "2023132060"  # 学号
+    ENABLE_CUIT_SPIDER: bool =True  # 是否启用成都信息工程大学教务爬虫
+    CUIT_USERNAME: str =  "2023132060"  # 学号
     CUIT_PASSWORD: str = "C18328526643x."  # 密码
     CUIT_AUTO_UPDATE: bool = True  # 是否自动更新数据
     CUIT_UPDATE_INTERVAL: int = 24  # 更新间隔（小时）
     
     # 教务系统Cookie配置（登录后获取，只保留关键3条）
-    CUIT_COOKIES: dict = {
+    CUIT_COOKIES: dict =  {
         "GSSESSIONID": "DDCAF4CB441F55D9ED1FB2372B4D8676",
         "JSESSIONID": "DDCAF4CB441F55D9ED1FB2372B4D8676",
         "semester.id": "1006",
@@ -144,7 +144,7 @@ class Config:
 
 
 # 兼容旧的全局变量
-ZHIPU_API_KEY = Config.ZHIPU_API_KEY
+ZHIPU_API_KEY =  Config.ZHIPU_API_KEY
 MODEL_NAME = Config.ZHIPU_MODEL_NAME  # 保持向后兼容
 API_HOST = Config.API_HOST
 API_PORT = Config.API_PORT

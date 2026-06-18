@@ -234,7 +234,7 @@ class LocalRuleEngine :
 
         return None
 
-    def get_category(self, query: str)->str:
+    def get_category (self, query: str)->str:
         """
         获取查询对应的类别。
 
@@ -244,7 +244,7 @@ class LocalRuleEngine :
         Returns:
             类别字符串，若无匹配则返回 "unknown"。
         """
-        query_lower =query.lower().strip()
+        query_lower = query.lower().strip()
         for rule in self.rules:
             for pattern in rule["patterns"]:
                 if pattern in query_lower:
@@ -255,7 +255,7 @@ class LocalRuleEngine :
                     return rule["category"]
         return "unknown"
 
-    def process_query(self, query: str) -> Dict[str, Any]:
+    def process_query (self, query: str) -> Dict[str, Any]:
         """
         处理用户查询，返回结果字典。
 

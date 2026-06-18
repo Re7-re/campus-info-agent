@@ -5,7 +5,7 @@ from data.mock_data import MOCK_STUDENT
 
 
 @tool
-def query_grade(term: str | None = None) -> str:
+def query_grade(term: str | None = None) ->str:
     """
     查询学生成绩。
 
@@ -15,21 +15,21 @@ def query_grade(term: str | None = None) -> str:
     Returns:
         格式化的成绩字符串。
     """
-    grade_data =MOCK_STUDENT["grade"]
-    if term and term in grade_data:
-        grades = grade_data[term]
+    grade_data = MOCK_STUDENT["grade"]
+    if term and term  in grade_data:
+        grades =  grade_data[term]
         lines = [f"{k}: {v}" for k, v in grades.items()]
         return f"【{term}成绩】\n" + "\n".join(lines)
 
     all_lines = []
-    for t, g in grade_data.items():
-        lines = [f"{k}: {v}" for k, v in g.items()]
-        all_lines.append(f"【{t}】\n" + "\n".join(lines))
-    return "\n".join(all_lines)
+    for t, g in  grade_data.items():
+        lines =  [f"{k}: {v}" for k, v in g.items()]
+        all_lines.append (f"【{t}】\n" + "\n".join(lines))
+    return "\n". join(all_lines)
 
 
 @tool
-def query_schedule(day: str | None = None) -> str:
+def query_schedule( day: str | None = None) -> str:
     """
     查询课表。
 
@@ -53,24 +53,24 @@ def query_schedule(day: str | None = None) -> str:
 
 
 @tool
-def query_classroom()-> str:
+def query_classroom ()-> str:
     """查询当前可用的空教室。"""
-    rooms = MOCK_STUDENT["classroom"]
+    rooms = MOCK_STUDENT ["classroom"]
     return f"当前可用空教室：{'、'.join(rooms)}"
 
 
 @tool
-def query_exam() -> str:
+def query_exam () -> str:
     """查询期末考试安排。"""
-    exams = MOCK_STUDENT["exam"]
+    exams = MOCK_STUDENT ["exam"]
     lines = [f"{e['name']} | {e['time']} | {e['location']}" for e in exams]
     return "【考试安排】\n" + "\n".join(lines)
 
 
 @tool
-def query_notice() -> str:
+def query_notice () -> str:
     """查询最新校园通知。"""
-    notices =MOCK_STUDENT["notice"]
+    notices =MOCK_STUDENT ["notice"]
     lines = [f"{i+1}. {n}" for i, n in enumerate(notices)]
     return "【校园通知】\n" + "\n".join(lines)
 
