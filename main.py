@@ -9,7 +9,7 @@ import argparse
 from typing import Optional
 
 # 添加项目根目录到Python路径
-sys.path.insert (0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ui.gradio_ui import create_ui, create_auth_ui
 from ui.integrated_ui import create_integrated_ui
@@ -97,37 +97,37 @@ def start_integrated_server():
     
     try:
         # 创建集成UI界面
-        logger.info("正在创建集成界面...")
-        demo = create_integrated_ui()
+        logger.info ("正在创建集成界面...")
+        demo = create_integrated_ui ()
         
         # 启动服务器
         server_config = Config.get_server_config()
-        logger.info(f"启动集成服务器: {server_config['host']}:{server_config['ui_port']}")
+        logger.info (f"启动集成服务器: {server_config['host']}:{server_config['ui_port']}")
         
-        print(f"[OK] 集成服务启动成功!")
+        print(f"[OK] 集成服务启动成功!" )
         print(f"访问地址: http://{server_config['host']}:{server_config['ui_port']}")
         print(f"日志目录: {Config.LOG_DIR}")
         print(f"数据目录: {Config.DATA_DIR}")
-        print(f"记忆目录: {Config.MEMORY_DIR}")
+        print(f"记忆目录: {Config.MEMORY_DIR}" )
         print(f"\n按 Ctrl+C 停止服务器\n")
         
         # 启动Gradio服务器（不指定固定端口，让Gradio自动选择可用端口）
-        demo.launch(
-            server_name=server_config['host'],
-            inbrowser=True,
-            show_error=True,
-            quiet=False,
-            favicon_path=None
+        demo.launch (
+            server_name= server_config['host'],
+            inbrowser =True,
+            show_error =True,
+            quiet =False,
+            favicon_path =None
         )
         
     except KeyboardInterrupt:
-        logger.info("用户中断，程序退出")
-        print("\n系统已停止")
+        logger.info ("用户中断，程序退出")
+        print ("\n系统已停止")
         
     except Exception as e:
-        logger.error(f"系统启动失败: {str(e)}")
-        print(f"系统启动失败: {str(e)}")
-        sys.exit(1)
+        logger.error (f"系统启动失败: {str(e)}")
+        print (f"系统启动失败: {str(e)}")
+        sys.exit (1)
 
 
 def start_main_server():
