@@ -69,45 +69,45 @@ class CampusInfoUI:
         else:
             return gr.Markdown("功能开发中...")
     
-    def _create_agent_ui(self, feature: AgentFeature) -> gr.Column:
+    def _create_agent_ui (self, feature: AgentFeature) -> gr.Column:
         """创建智能助手UI"""
-        with gr.Column() as ui_block:
-            gr.Markdown("### 🤖 AI智能助手")
-            gr.Markdown("支持自然语言查询，可以回答各种校园信息问题")
+        with gr.Column () as ui_block:
+            gr.Markdown ("### 🤖 AI智能助手")
+            gr.Markdown ("支持自然语言查询，可以回答各种校园信息问题")
             
             chatbot = gr.Chatbot(
                 height=500,
                 label="对话记录"
             )
             
-            with gr.Row():
-                msg = gr.Textbox(
-                    placeholder="请输入你的问题...",
-                    label="",
-                    scale=4,
-                    container=False
+            with gr.Row ():
+                msg =  gr.Textbox(
+                    placeholder= "请输入你的问题...",
+                    label ="",
+                    scale =4,
+                    container =False
                 )
-                submit_btn = gr.Button("发送", scale=1, variant="primary")
+                submit_btn  = gr.Button("发送", scale=1, variant="primary")
             
             with gr.Row():
-                use_memory = gr.Checkbox(
-                    label="启用对话记忆",
-                    value=True,
-                    scale=1
+                use_memory =gr.Checkbox(
+                    label= "启用对话记忆",
+                    value= True,
+                    scale= 1
                 )
-                clear_btn = gr.Button("清空对话", scale=1)
+                clear_btn =gr.Button("清空对话", scale=1)
             
             # 状态显示
-            with gr.Accordion("对话状态", open=False):
-                memory_info = gr.Textbox(
-                    label="记忆信息",
-                    interactive=False,
-                    lines=2
+            with gr.Accordion ("对话状态", open=False):
+                memory_info =gr.Textbox(
+                    label= "记忆信息",
+                    interactive= False,
+                    lines= 2
                 )
             
             # 事件绑定
-            def respond(message, history, memory_enabled):
-                if not message.strip():
+            def respond (message, history, memory_enabled):
+                if not message.strip ():
                     return "", history
                 
                 try:
