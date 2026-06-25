@@ -10,7 +10,7 @@ import json
 import os
 
 
-class  NoticeFeature(BaseFeature):
+class NoticeFeature(BaseFeature):
     """
     通知查询功能模块
     支持查询最新校园通知、通知详情等
@@ -43,7 +43,7 @@ class  NoticeFeature(BaseFeature):
             # 使用模拟数据
             self.notice_data = MOCK_STUDENT["notice"]
     
-    def execute (self, count: int = 5, **kwargs) -> Dict[str, Any]:
+    def execute(self, count: int = 5, **kwargs) -> Dict[str, Any]:
         """
         执行通知查询
         
@@ -56,7 +56,24 @@ class  NoticeFeature(BaseFeature):
         """
         try:
             notices_to_show = self.notice_data[:count]
-            notice_list = "【校园通知】\n" + "\n".join([f"{i+1}. {n}" for i, n in enumerate(notices_to_show)])
+            
+            notice_lines = ["【校园通知】"]
+            for i, notice in enumerate(notices_to_show, 1):
+                if isinstance(notice, dict):
+                    title = notice.get('title', '')
+                    content = notice.get('content', '')
+                    time = notice.get('time', '')
+                    notice_type = notice.get('type', '')
+                    line = f"{i}. [{notice_type}] {title}"
+                    if time:
+                        line += f" ({time})"
+                    if content:
+                        line += f"\n   {content}"
+                    notice_lines.append(line)
+                else:
+                    notice_lines.append(f"{i}. {notice}")
+            
+            notice_list = "\n".join(notice_lines)
             
             result = {
                 "success": True,
@@ -120,7 +137,7 @@ class  NoticeFeature(BaseFeature):
         """
         return self.notice_data[:count]
     
-    def search_notices(self, keyword: str) -> List[str]:
+    def search_notices(self, keyword: str) -> List[Dict[str, str]]:
         """
         搜索通知
         
@@ -132,10 +149,10 @@ class  NoticeFeature(BaseFeature):
         """
         return [
             notice for notice in self.notice_data
-            if keyword in notice
+            if keyword in notice.get('title', '') or keyword in notice.get('content', '')
         ]
     
-    def get_notice_categories(self) -> Dict[str, List[str]]:
+    def get_notice_categories(self) -> Dict[str, List[Dict[str, str]]]:
         """
         获取通知分类
         
@@ -150,18 +167,19 @@ class  NoticeFeature(BaseFeature):
         }
         
         for notice in self.notice_data:
-            if "考试" in notice or "课程" in notice or "教学" in notice:
+            content = notice.get('title', '') + notice.get('content', '')
+            if "考试" in content or "课程" in content or "教学" in content:
                 categories["教学"].append(notice)
-            elif "升级" in notice or "维护" in notice or "行政" in notice:
+            elif "升级" in content or "维护" in content or "行政" in content:
                 categories["行政"].append(notice)
-            elif "活动" in notice or "比赛" in notice:
+            elif "活动" in content or "比赛" in content:
                 categories["活动"].append(notice)
             else:
                 categories["其他"].append(notice)
         
         return categories
     
-    def get_important_notices(self) -> List[str]:
+    def get_important_notices(self) -> List[Dict[str, str]]:
         """
         获取重要通知
         
@@ -172,7 +190,8 @@ class  NoticeFeature(BaseFeature):
         important_notices = []
         
         for notice in self.notice_data:
-            if any(keyword in notice for keyword in important_keywords):
+            content = notice.get('title', '') + notice.get('content', '')
+            if any(keyword in content for keyword in important_keywords):
                 important_notices.append(notice)
         
         return important_notices

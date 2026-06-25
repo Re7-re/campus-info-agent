@@ -10,6 +10,7 @@ from .classroom_feature import ClassroomFeature
 from .exam_feature import ExamFeature
 from .notice_feature import NoticeFeature
 from .agent_feature import AgentFeature
+from .selection_feature import SelectionFeature
 
 __all__ = [
     'BaseFeature',
@@ -18,5 +19,6 @@ __all__ = [
     'ClassroomFeature',
     'ExamFeature',
     'NoticeFeature',
-    'AgentFeature'
+    'AgentFeature',
+    'SelectionFeature'
 ]

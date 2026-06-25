@@ -211,6 +211,25 @@ class SessionManager:
             return True
         return False
     
+    def save_session(self, session_id: str, title: str = None) -> bool:
+        """
+        保存指定会话（可选更新标题）
+        
+        Args:
+            session_id: 会话ID
+            title: 新标题（可选）
+        
+        Returns:
+            是否保存成功
+        """
+        session = self.get_session(session_id)
+        if session:
+            if title:
+                session.update_title(title)
+            self._save_session(session)
+            return True
+        return False
+    
     def get_session_list(self) -> List[Dict[str, Any]]:
         """
         获取会话列表

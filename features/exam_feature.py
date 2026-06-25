@@ -1,107 +1,193 @@
 """
-考试查询功能模块
+考试安排查询功能模块
+支持真实数据和模拟数据的查询
 """
 
 from typing import Dict, Any, Optional, List
 from .base_feature import BaseFeature
-from data.mock_data import MOCK_STUDENT, update_student_with_cuit_data
-from config import Config
-from datetime import datetime
-import json
-import os
+from utils.data_loader import data_loader
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ExamFeature(BaseFeature):
     """
-    考试查询功能模块
-    支持查询考试安排、即将到来的考试等
+    考试安排查询功能模块
+    支持按学期查询考试安排、查看全部考试等
     """
     
     def __init__(self):
         super().__init__(
             name="考试查询",
-            description=" 查询期末考试安排信息"
+            description="查询期末考试安排信息"
         )
-        # 根据配置选择数据源
-        if Config.DATA_SOURCE == "cuit" and Config.ENABLE_CUIT_SPIDER:
-            # 使用真实教务数据
-            student_data = update_student_with_cuit_data(
-                username=Config.CUIT_USERNAME,
-                password=Config.CUIT_PASSWORD,
-                cookies=Config.CUIT_COOKIES
-            )
-            self.exam_data = student_data["exam"]
-        elif Config.DATA_SOURCE == "manual":
-            # 使用手动导入数据
-            manual_data_path = os.path.join(os.path.dirname(__file__), "..", "data", "manual_data.json")
-            try:
-                with open(manual_data_path, "r", encoding="utf-8") as f:
-                    manual_data = json.load(f)
-                    self.exam_data = manual_data.get("exam", MOCK_STUDENT["exam"])
-            except:
-                self.exam_data = MOCK_STUDENT["exam"]
+        # 尝试加载真实数据
+        self.exams = data_loader.load_exams()
+        
+        # 如果没有真实数据，使用模拟数据
+        if not self.exams:
+            logger.warning("未加载到真实考试数据，使用模拟数据")
+            self._use_mock_data()
         else:
-            # 使用模拟数据
-            self.exam_data = MOCK_STUDENT["exam"]
+            logger.info(f"成功加载 {len(self.exams)} 条真实考试记录")
     
-    def execute(self, subject: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+    def _use_mock_data(self):
+        """使用模拟数据"""
+        from data.mock_data import MOCK_STUDENT
+        self.exams = []
+        for exam in MOCK_STUDENT.get("exam", []):
+            self.exams.append({
+                'semester': exam.get('学期', ''),
+                'course_name': exam.get('课程名称', ''),
+                'exam_date': exam.get('日期', ''),
+                'exam_time': exam.get('时间', ''),
+                'exam_location': exam.get('地点', '待定'),
+                'exam_type': exam.get('类型', '期末考试'),
+                'note': exam.get('备注', '')
+            })
+    
+    def execute(self, semester: str = None, course: str = None, **kwargs) -> Dict[str, Any]:
         """
         执行考试查询
         
         Args:
-            subject: 科目名称，如果为None则查询全部
+            semester: 学期筛选条件
+            course: 课程名称筛选条件
             **kwargs: 其他参数
         
         Returns:
             查询结果字典
         """
         try:
-            if subject:
-                # 查询指定科目考试
-                matched_exams = [e for e in self.exam_data if subject in e["name"]]
-                if matched_exams:
-                    exam = matched_exams[0]
-                    result = {
-                        "success": True,
-                        "subject": subject,
-                        "exam": exam,
-                        "message": f"【{exam['name']}】\n时间：{exam['time']}\n地点：{exam['location']}"
-                    }
-                else:
-                    result = {
-                        "success": False,
-                        "message": f"未找到科目 {subject} 的考试安排"
-                    }
-            else:
-                # 查询全部考试
-                exam_list = "【考试安排】\n"
-                for e in self.exam_data:
-                    exam_list += f"{e['name']} | {e['time']} | {e['location']}\n"
-                
-                result = {
-                    "success": True,
-                    "exams": self.exam_data,
-                    "message": exam_list
+            # 过滤数据
+            filtered_exams = self._filter_exams(semester, course)
+            
+            if not filtered_exams:
+                return {
+                    "success": False,
+                    "message": f"未找到符合条件的考试安排"
                 }
             
-            return result
+            # 按日期排序
+            filtered_exams = sorted(filtered_exams, key=lambda x: (x.get('exam_date', ''), x.get('exam_time', '')))
+            
+            # 生成友好的文本输出
+            output = self._format_exams_output(filtered_exams)
+            
+            return {
+                "success": True,
+                "exams": filtered_exams,
+                "message": output
+            }
             
         except Exception as e:
+            logger.error(f"查询考试安排时出错: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
-                "message": f"查询考试时出错: {str(e)}"
+                "message": f"查询考试安排时出错: {str(e)}"
             }
     
-    def get_ui_components(self) -> Dict[str, Any]:
+    def _normalize_semester(self, semester: str) -> str:
         """
-        获取UI组件配置
+        标准化学期格式，支持多种输入格式
+        
+        Args:
+            semester: 学期字符串
         
         Returns:
-            UI组件配置字典
+            标准化后的学期格式（与数据库格式一致）
         """
-        subjects = [e["name"] for e in self.exam_data]
+        if not semester:
+            return semester
         
+        import re
+        # 处理格式如 "2023-2024-1" -> "2023-2024学年第1学期"
+        match = re.match(r'(\d{4})-(\d{4})-(\d)', semester)
+        if match:
+            year1, year2, term = match.groups()
+            return f"{year1}-{year2}学年第{term}学期"
+        
+        return semester
+    
+    def _filter_exams(self, semester: str = None, course: str = None) -> List[Dict[str, Any]]:
+        """
+        过滤考试数据
+        
+        Args:
+            semester: 学期筛选条件
+            course: 课程名称筛选条件
+        
+        Returns:
+            过滤后的考试列表
+        """
+        filtered = self.exams
+        
+        # 按学期过滤
+        if semester and semester != "全部":
+            normalized_semester = self._normalize_semester(semester)
+            filtered = [e for e in filtered if normalized_semester in e.get('semester', '') or semester in e.get('semester', '')]
+        
+        # 按课程名称过滤
+        if course:
+            course_lower = course.lower()
+            filtered = [e for e in filtered if course_lower in e.get('course_name', '').lower()]
+        
+        return filtered
+    
+    def _format_exams_output(self, exams: List[Dict[str, Any]]) -> str:
+        """
+        格式化考试输出
+        
+        Args:
+            exams: 考试列表
+        
+        Returns:
+            格式化的文本输出
+        """
+        if not exams:
+            return "没有找到考试安排"
+        
+        output_parts = []
+        current_date = None
+        
+        for exam in exams:
+            exam_date = exam.get('exam_date', '待定')
+            exam_time = exam.get('exam_time', '待定')
+            course_name = exam.get('course_name', '未知课程')
+            location = exam.get('exam_location', '待定')
+            exam_type = exam.get('exam_type', '期末考试')
+            note = exam.get('note', '')
+            
+            # 添加日期分隔
+            if exam_date != current_date:
+                if current_date is not None:
+                    output_parts.append("")
+                output_parts.append(f"📅 {exam_date}")
+                current_date = exam_date
+            
+            output_parts.append(f"  ⏰ {exam_time} | {course_name}")
+            output_parts.append(f"     地点: {location} | 类型: {exam_type}")
+            
+            if note:
+                output_parts.append(f"     备注: {note}")
+        
+        return "\n".join(output_parts)
+    
+    def get_available_semesters(self) -> List[str]:
+        """获取可用的学期列表"""
+        semesters = set()
+        for exam in self.exams:
+            if 'semester' in exam:
+                semesters.add(exam['semester'])
+        
+        # 排序：最新的在前面
+        return sorted(list(semesters), reverse=True)
+    
+    def get_ui_components(self) -> Dict[str, Any]:
+        """获取UI组件配置"""
+        semesters = self.get_available_semesters()
         return {
             "type": "exam_query",
             "title": "考试查询",
@@ -109,10 +195,10 @@ class ExamFeature(BaseFeature):
             "components": [
                 {
                     "type": "dropdown",
-                    "label": "选择科目",
-                    "choices": ["全部"] + subjects,
+                    "label": "选择学期",
+                    "choices": ["全部"] + semesters,
                     "default": "全部",
-                    "key": "subject"
+                    "key": "semester"
                 },
                 {
                     "type": "button",
@@ -126,87 +212,4 @@ class ExamFeature(BaseFeature):
                     "readonly": True
                 }
             ]
-        }
-    
-    def get_upcoming_exams(self, days: int = 7) -> List[Dict[str, Any]]:
-        """
-        获取即将到来的考试
-        
-        Args:
-            days: 查询未来多少天的考试
-        
-        Returns:
-            即将到来的考试列表
-        """
-        upcoming_exams = []
-        today = datetime.now()
-        
-        for exam in self.exam_data:
-            try:
-                # 解析考试时间（简化处理，实际需要更复杂的时间解析）
-                exam_date = self._parse_exam_date(exam["time"])
-                if exam_date:
-                    days_until = (exam_date - today).days
-                    if 0 <= days_until <= days:
-                        upcoming_exams.append({
-                            **exam,
-                            "days_until": days_until
-                        })
-            except Exception:
-                continue
-        
-        # 按时间排序
-        upcoming_exams.sort(key=lambda x: x["days_until"])
-        return upcoming_exams
-    
-    def _parse_exam_date(self, time_str: str) -> Optional[datetime]:
-        """
-        解析考试时间字符串
-        
-        Args:
-            time_str: 时间字符串
-        
-        Returns:
-            解析后的日期时间对象
-        """
-        try:
-            # 简化的时间解析逻辑
-            # 实际应用中需要更复杂的时间解析
-            if "月" in time_str and "日" in time_str:
-                parts = time_str.split()
-                date_part = parts[0]  # "6月10日"
-                time_part = parts[1] if len(parts) > 1 else "上午9点"  # "上午9点"
-                
-                # 解析日期
-                month_day = date_part.replace("月", "-").replace("日", "")
-                current_year = datetime.now().year
-                date_str = f"{current_year}-{month_day}"
-                
-                # 解析时间
-                hour = 9  # 默认上午9点
-                if "下午" in time_part:
-                    hour = 14  # 默认下午2点
-                elif "上午" in time_part:
-                    hour = 9
-                
-                return datetime.strptime(f"{date_str} {hour}:00", "%Y-%m-%d %H:%M")
-        except Exception:
-            pass
-        
-        return None
-    
-    def get_exam_summary(self) -> Dict[str, Any]:
-        """
-        获取考试摘要信息
-        
-        Returns:
-            考试摘要
-        """
-        upcoming = self.get_upcoming_exams()
-        
-        return {
-            "total_exams": len(self.exam_data),
-            "upcoming_exams": len(upcoming),
-            "next_exam": upcoming[0] if upcoming else None,
-            "message": f"共有 {len(self.exam_data)} 门考试，其中 {len(upcoming)} 门即将到来"
         }
